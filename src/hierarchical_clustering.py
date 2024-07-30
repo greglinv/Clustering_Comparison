@@ -1,48 +1,26 @@
 import numpy as np
-from scipy.cluster.hierarchy import linkage, dendrogram
-import matplotlib.pyplot as plt
-from scipy.spatial.distance import squareform
-from src.similarity import jaccard_similarity
+from scipy.cluster.hierarchy import linkage, fcluster
+from scipy.spatial.distance import pdist
 
 
-def jaccard_distance(x, y):
-    """Compute the Jaccard distance between two MinHash signatures."""
-    return 1 - jaccard_similarity(x, y)
+def hierarchical_clustering(fingerprints):
+    """
+    Perform hierarchical clustering on fingerprints.
 
-
-def hierarchical_clustering(minhashes):
-    # Ensure MinHash signatures are 2D arrays
-    minhashes_array = np.array(minhashes)
-
-    # Calculate the pairwise Jaccard distances
-    num_samples = minhashes_array.shape[0]
-    jaccard_distances = np.zeros((num_samples, num_samples))
-
-
-    for i in range(num_samples):
-        for j in range(i + 1, num_samples):
-            jaccard_distances[i, j] = jaccard_distance(minhashes_array[i], minhashes_array[j])
-            jaccard_distances[j, i] = jaccard_distances[i, j]
-
-    # Debug: Print the Jaccard distance matrix
-    print("Jaccard Distance Matrix:")
-    print(jaccard_distances)
-
-    # Convert to condensed distance matrix
-    condensed_distances = squareform(jaccard_distances)
-
-    # Debug: Print the condensed distance matrix
-    print("Condensed Distance Matrix:")
-    print(condensed_distances)
-
-    # Perform hierarchical clustering
+    :param fingerprints: List of fingerprints
+    :return: Cluster labels
+    """
+    condensed_distances = pdist(fingerprints, metric='jaccard')
     linked = linkage(condensed_distances, method='ward')
-    dendrogram(linked)
-    plt.show()
-    return linked
 
+    # Determine the number of clusters based on the maximum distance
+    max_d = 0.5  # This is a threshold value; you might need to adjust it
+    clusters = fcluster(linked, max_d, criterion='distance')
 
-if __name__ == "__main__":
-    fingerprints = [[1, 2, 3], [2, 3, 4], [4, 5, 6]]  # Example fingerprints
-    minhashes = [[hash(f) for f in fp] for fp in fingerprints]
-    hierarchical_clustering(minhashes)
+    # Ensure we return the correct number of clusters
+    num_clusters = len(set(clusters))
+    if num_clusters != len(fingerprints):
+        print(f"Expected number of clusters: {len(fingerprints)}, but got: {num_clusters}. Adjusting...")
+        clusters = fcluster(linked, t=len(fingerprints), criterion='maxclust')
+
+    return clusters - 1  # Adjust cluster labels to be 0-based

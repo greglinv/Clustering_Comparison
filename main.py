@@ -9,7 +9,6 @@ from src.dec import DEC
 from src.error_analysis import compare_methods
 
 
-
 def main():
     # Load FSL fileset and generate fingerprints
     fsl_directory = "data/fsl_fileset"
@@ -54,10 +53,18 @@ def main():
     print(f"Hierarchical Clustering Time: {results['Hierarchical Clustering']['time']:.4f} seconds")
     print("Hierarchical Clustering Dendrogram:")
     print(results['Hierarchical Clustering']['clusters'])
+    hierarchical_metrics = results['Hierarchical Clustering']['metrics']
+    print(f"Hierarchical Clustering Metrics: Silhouette: {hierarchical_metrics[3]:.4f}, "
+          f"ARI: {hierarchical_metrics[1]:.4f}, NMI: {hierarchical_metrics[2]:.4f}, "
+          f"Calinski-Harabasz: {hierarchical_metrics[4]:.4f}, Davies-Bouldin: {hierarchical_metrics[5]:.4f}")
 
     print(f"\nVAE Clustering Time: {results['VAE Clustering']['time']:.4f} seconds")
     print("VAE Clustering Results:")
     print(results['VAE Clustering']['clusters'])
+    vae_metrics = results['VAE Clustering']['metrics']
+    print(f"VAE Clustering Metrics: Silhouette: {vae_metrics[3]:.4f}, "
+          f"ARI: {vae_metrics[1]:.4f}, NMI: {vae_metrics[2]:.4f}, "
+          f"Calinski-Harabasz: {vae_metrics[4]:.4f}, Davies-Bouldin: {vae_metrics[5]:.4f}")
 
 
 if __name__ == "__main__":
